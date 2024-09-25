@@ -1,8 +1,8 @@
 import pytest
-from project.project import fetch_trivia_questions, ask_question, check_answer
+from project import fetch_trivia_questions, ask_question, check_answer
 
 def test_fetch_trivia_questions():
-    questions = fetch_trivia_questions()
+    questions = fetch_trivia_questions(9, 'medium')  # Using category ID 9 and medium difficulty for testing
     assert len(questions) > 0
     assert isinstance(questions, list)
     assert "question" in questions[0]
@@ -19,6 +19,8 @@ def test_ask_question():
     assert len(options) == 4
     assert "Peter Cushing" in options
     assert "Boris Karloff" in options
+    assert "&quot;" not in options
+    assert "&#039;" not in options
 
 def test_check_answer():
     question = {
