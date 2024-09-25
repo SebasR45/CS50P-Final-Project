@@ -24,7 +24,7 @@ pip install requests pytest
 
 ```bash
 Copy code
-git clone <repository-url>
+git clone <https://github.com/SebasR45/CS50P-Final-Project>
 ```
 
 - **Run the Game:** Open your terminal, navigate to the project directory where you cloned the repository, and execute the following command to start the game:
