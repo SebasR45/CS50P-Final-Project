@@ -1,5 +1,6 @@
 import random
 import requests
+import json
 
 def main():
     """Main function to run the Trivia Game.
@@ -12,16 +13,24 @@ def main():
     """
     print("Welcome to the Trivia Game!")
     player_name = input("Enter your name: ")
-    questions = fetch_trivia_questions()
+    category = select_category()
+    difficulty = select_difficulty()
+    questions = fetch_trivia_questions(category, difficulty)
     score = play_game(questions)
     print(f"\n{player_name}, your final score is: {score}")
+    save_score(player_name, score)
+    display_leaderboard()
 
 
-def fetch_trivia_questions():
+def fetch_trivia_questions(category, difficulty):
     """Fetches trivia questions from an external API.
 
-    This function retrieves 10 trivia questions of medium
-    difficulty from the Open Trivia Database.
+    This function retrieves 10 trivia questions based on the selected
+    category and difficulty from the Open Trivia Database.
+
+    Parameters:
+        category (int): The trivia category ID.
+        difficulty (str): The difficulty level ('easy', 'medium', 'hard').
 
     Raises:
         HTTPError: If the API request fails.
@@ -29,7 +38,7 @@ def fetch_trivia_questions():
     Returns:
         list: A list of trivia questions.
     """
-    url = "https://opentdb.com/api.php?amount=10&category=11&difficulty=medium&type=multiple"
+    url = f"https://opentdb.com/api.php?amount=10&category={category}&difficulty={difficulty}&type=multiple"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -37,6 +46,70 @@ def fetch_trivia_questions():
     else:
         print("Failed to fetch trivia questions.")
         return []
+
+
+def select_category():
+    """Displays a list of trivia categories for the player to choose from.
+
+    Returns:
+        int: The selected category ID.
+    """
+    categories = {
+        9: "General Knowledge",
+        10: "Entertainment: Books",
+        11: "Entertainment: Film",
+        12: "Entertainment: Music",
+        13: "Entertainment: Musicals & Theatres",
+        14: "Entertainment: Television",
+        15: "Entertainment: Video Games",
+        16: "Entertainment: Board Games",
+        17: "Science & Nature",
+        18: "Science: Computers",
+        19: "Science: Mathematics",
+        20: "Mythology",
+        21: "Sports",
+        22: "Geography",
+        23: "History",
+        24: "Politics",
+        25: "Art",
+        26: "Celebrities",
+        27: "Animals",
+        28: "Vehicles",
+        29: "Entertainment: Comics",
+        30: "Science: Gadgets",
+        31: "Entertainment: Japanese Anime & Manga",
+        32: "Entertainment: Cartoon & Animations"
+    }
+    print("\nSelect a category:")
+    for key, value in categories.items():
+        print(f"{key}: {value}")
+    while True:
+        try:
+            category = int(input("Enter the category number: "))
+            if category in categories:
+                return category
+            else:
+                print("Invalid category number. Try again.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+
+def select_difficulty():
+    """Allows the player to select a difficulty level.
+
+    Returns:
+        str: The selected difficulty level ('easy', 'medium', 'hard').
+    """
+    difficulties = ["easy", "medium", "hard"]
+    print("\nSelect a difficulty level:")
+    for difficulty in difficulties:
+        print(difficulty.capitalize())
+    while True:
+        difficulty = input("Enter difficulty (easy/medium/hard): ").lower()
+        if difficulty in difficulties:
+            return difficulty
+        else:
+            print("Invalid difficulty level. Try again.")
 
 
 def ask_question(question):
@@ -118,6 +191,52 @@ def play_game(questions):
         else:
             print(f"Wrong! The correct answer was: {question['correct_answer']}")
     return score
+
+
+def save_score(player_name, score):
+    """Saves the player's score to a file.
+
+    This function appends the player's name and score to a JSON file
+    to maintain a leaderboard.
+
+    Parameters:
+        player_name (str): The name of the player.
+        score (int): The final score of the player.
+
+    Returns:
+        None
+    """
+    leaderboard = []
+    try:
+        with open("leaderboard.json", "r") as file:
+            leaderboard = json.load(file)
+    except FileNotFoundError:
+        pass
+
+    leaderboard.append({"name": player_name, "score": score})
+    leaderboard = sorted(leaderboard, key=lambda x: x["score"], reverse=True)
+
+    with open("leaderboard.json", "w") as file:
+        json.dump(leaderboard, file, indent=4)
+
+
+def display_leaderboard():
+    """Displays the leaderboard.
+
+    This function reads and displays the top scores from the
+    leaderboard JSON file.
+
+    Returns:
+        None
+    """
+    try:
+        with open("leaderboard.json", "r") as file:
+            leaderboard = json.load(file)
+            print("\nLeaderboard:")
+            for entry in leaderboard[:10]:
+                print(f"{entry['name']}: {entry['score']}")
+    except FileNotFoundError:
+        print("\nNo leaderboard data available.")
 
 
 if __name__ == "__main__":
