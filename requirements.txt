@@ -1,2 +1,4 @@
 Requests
+random
+json
 pytest
